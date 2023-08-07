@@ -1,0 +1,20 @@
+﻿@using Blazortest.Components
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <CustomNotFound />
+    </NotFound>
+</Router>
+
+@code {
+    private bool showIndex = false; // 將此變數設為 false，預設不顯示 "Index" 頁面
+}
+
+@if (showIndex)
+{
+    <Index />
+}
+

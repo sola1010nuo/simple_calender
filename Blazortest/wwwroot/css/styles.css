@@ -1,0 +1,11 @@
+﻿
+/* 避免表格標題換行 */
+table th {
+    white-space: nowrap;
+}
+
+
+
+
+
+

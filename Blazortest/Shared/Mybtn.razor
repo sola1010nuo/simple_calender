@@ -1,0 +1,13 @@
+﻿<div>
+    <a class="@btnStyle" @onclick="ToggleColor">Click Me !</a>
+</div>
+
+@code {
+    
+    string btnStyle = "btn-blue"; 
+        
+    void ToggleColor()
+    {
+        btnStyle = btnStyle == "btn-blue" ? "btn-green" : "btn-blue";
+    }
+}

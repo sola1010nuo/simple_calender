@@ -1,0 +1,25 @@
+﻿@page "/customnotfound"
+@inject NavigationManager navigation
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="h5">404! This Is Custom Not Found Page</div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" @onclick="GoHome">Go Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void GoHome()
+    {
+        navigation.NavigateTo("/");
+    }
+}

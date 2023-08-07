@@ -1,0 +1,202 @@
+﻿@page "/"
+@using Blazortest.Services;
+@using Blazortest.Components
+@inject IWorks workRepository
+@inject ILogger<Index> logger
+@using System.IO
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime jsRuntime
+@using Blazored.Toast
+
+<h1>簡易行事曆</h1>
+
+@if (true) 
+{
+    <div>
+        <button @onclick="AddNewEvent">新增行程</button>
+        <button @onclick="DeleteEvent">刪除特定行程</button>
+        <button @onclick="ShowAllEvents">顯示全部行程</button>
+        <button @onclick="ShowUpcomingEvents">顯示即將開始的行程</button>
+        <hr />
+    </div>
+}
+
+<!-- 新增成功通知 -->
+<div class="alert-container"> 
+    @if (!string.IsNullOrEmpty(notificationMessage)) 
+    {
+        <div class="alert alert-success">
+            @notificationMessage
+        </div>
+    }
+</div>
+
+<!-- 新增錯誤通知 -->
+<div class="error-message alert alert-danger" role="alert" style="@(string.IsNullOrEmpty(errorMessage) ? "display:none;" : "display:block;")">
+    @errorMessage 
+</div>
+
+
+@if (IsN)
+{
+    <form>
+        <h6>開始時間</h6>
+        <input @bind="StartTime" type="datetime-local" pattern="\d{4}/\d{2}/\d{2} \d{2}:\d{2}" />
+        <h6>結束時間</h6>
+        <input @bind="EndTime" type="datetime-local" pattern="\d{4}/\d{2}/\d{2} \d{2}:\d{2}" />
+        <h6>行程說明</h6>
+        <input @bind="Brief" />
+
+        
+        @if (EndTime < StartTime)
+        {
+            showError = true;
+        }
+        @if (EndTime >= StartTime)
+        {
+            showError = false;
+        }
+
+        @if (showError)
+        {
+            <p style="color: red;">結束時間必須晚於開始時間！</p>
+        }
+
+        <button class="btn btn-primary" @onclick="AddData">確認</button>
+    </form>
+}
+
+
+@if (IsSA)
+{
+    <ScheduleTable WorkList="@workRepository.GetWorks()" />
+}
+
+@if (IsD)
+{
+    <h5>輸入欲刪除之編號</h5>
+    <input @bind="Delete" />
+    <button class = " btn btn-primary" @onclick="DeleteData">確定刪除</button>
+    <table class="table table-hover">
+        <tr>
+            <th>目前所加入之行程</th>
+        </tr>
+    </table>
+    <ScheduleTable WorkList="@workRepository.GetWorks()" />
+}
+
+@if (IsSC)
+{
+    <CurrentSchedule WorkList="@workRepository.GetWorks()" />
+}
+
+@code {
+    private bool IsSA = false;  
+    private bool IsSC = false;
+    private bool IsN = false;
+    private bool IsD = false;
+    private bool showError = false;
+    private bool showErrormessage = false;
+    private string Brief = "";
+    private DateTime StartTime;
+    private DateTime EndTime;
+    private int? Delete = null;
+    private string errorMessage = "";
+    private string notificationMessage = string.Empty;
+
+
+    private async Task AddData()
+    {
+        if (!showError)
+        {
+            var works = workRepository.GetWorks();
+            int newId = 1;
+            if (works.Any()) //如果裡面原本就有
+            {
+                newId = works.Max(m => m.Id) + 1;
+            }
+            workRepository.GetWorks().Add(new Works { Id = newId, Brief = Brief, StartTime = StartTime, EndTime = EndTime });
+            logger.LogInformation($"Adding new work : 編號 : {newId.ToString("D6")},開始時間 : {StartTime},結束時間 : {EndTime},簡述 : {Brief}");           
+            notificationMessage = "新增成功！";
+
+        }
+        else
+        {
+            logger.LogWarning("AddError");
+            errorMessage = "新增失敗！";
+        }
+
+        showErrormessage = !string.IsNullOrEmpty(errorMessage);
+        Brief = "";
+        IsN = false;// 讓輸入資料的框框消失
+    }
+
+    private void DeleteData()
+    {
+        var works = workRepository.GetWorks();
+        var targetWork = works.FirstOrDefault(w => w.Id == Delete);
+
+        if (targetWork != null)
+        {
+            works.Remove(targetWork);
+            logger.LogInformation($"Delete ID schedule: {targetWork.Id.ToString("D6")}");
+        }
+        Delete = null;
+    }
+    private void AddNewEvent()
+    {
+        notificationMessage = string.Empty;
+        errorMessage = "";
+        StartTime = DateTime.Now;
+        EndTime = DateTime.Now;
+        IsSA = false;
+        IsD = false;
+        IsSC = false;
+        IsN = true;
+
+    }
+
+    private void ShowAllEvents()
+    {
+        notificationMessage = string.Empty;
+        errorMessage = "";
+        IsD = false;
+        IsSC = false;
+        IsN = false;
+        IsSA = true;
+    }
+
+    private void DeleteEvent()
+    {
+        notificationMessage = string.Empty;
+        errorMessage = "";
+        IsSC = false;
+        IsN = false;
+        IsSA = false;
+        IsD = true;
+    }
+
+    private void ShowUpcomingEvents()
+    {
+        notificationMessage = string.Empty;
+        errorMessage = "";
+        IsN = false;
+        IsSA = false;
+        IsD = false;
+        IsSC = true;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
